@@ -21,7 +21,7 @@ contains(achievement(frame, interior), achievement(wallsPainted, windowsFitted))
 contains(achievement(frame, exterior), achievement(frame, lawnInstalled)).
 contains(achievement(frame, exterior), achievement(frame, concretePoured)).
 
-typeOr(achievement(true, houseBuilt)).
+typeAnd(achievement(true, houseBuilt)).
 typeAnd(achievement(frame, interiorExterior)).
 typeAnd(achievement(true, frame)).
 typeAnd(achievement(frame, interior)).
