@@ -36,69 +36,64 @@ a(sitePreparer, frameManager, achievement(true, sitePrepared)).
 a(bricklayer, frameManager, achievement(sitePrepared, wallsBuilt)).
 a(painter, interiorManager, achievement(frame, wallsPainted)).
 a(fitter, interiorManager, achievement(wallsPainted, windowsFitted)).
-%a(me, exteriorManager, achievement(frame, lawnInstalled)).
 
-%-ctrlSelf(painter,achievement(frame,wallsPainted)).
-%-ctrlSelf(interiorManager,achievement(frame,wallsPainted)).
-%ctrlSelf(exteriorManager,achievement(frame, lawnInstalled)).
-%ctrlSelf(exteriorManager,achievement(frame, concretePoured)).
-
-% Essere accountable implica che ci sia aspettativa.
+% Accountability implies just expectation
 exp(X,Y,A) :- a(X,Y,A).
 
-% Se qualcuno è accountable verso di me per un achievement io ho il controllo su di esso.
+% If someone is accountable towards me for an achievement, I have control over it
 ctrl(X,A) :- a(_,X,A).
 
-% Se sono accountable per un achievement atomico e nessuno è accountable verso di me, allora devo averne controllo diretto.
+% If I am accountable for an atomic achievement and no one is accountable towards me for it I must be able to realize it
 canRealize(X,A) :- a(X,_,A), not a(_,X,A),atomic(A).
 
-% Avere controllo diretto implica avere controllo.
+% If I can realize an achievement, I have control over it
 ctrl(X,A) :- canRealize(X,A).
 
-% Un achievement che ne contiene altri è complesso.
+% An achievement that contains other achievements is a complex achievement
 complex(achievement(P,Q)) :- achievement(P,Q), contains(achievement(P,Q),_).
 
-% Un achievement che non ne contiene altri è atomico.
+% An achievement that does not contain other achievements is an atomic achievement
 atomic(achievement(P,Q)) :- achievement(P,Q), not contains(achievement(P,Q),_).
 
-% Un achievement non può essere sia complesso che atomico.
+% An achievement cannot be both complex and atomic
 :- complex(A), atomic(A).
 
-% E' inconsistente che un achievement non sia né atomico né complesso.
+% An achievement must be complex or atomic
 :- achievement(P,Q), not complex(achievement(P,Q)), not atomic(achievement(P,Q)).
 
-% La relazione contains è asimmetrica.
+% The contains relation is asymmetric
 :- contains(A1,A2),contains(A2,A1).
 
-% Se un achievement è di tipo AND, deve contenere esattamente due sottogoal
+% If an achievement is of type AND, it must contain exactly two subgoals
 2 { containsDef(A,A1) : contains(A,A1) } 2 :- typeAnd(A).
 :- contains(A,A1), not containsDef(A,A1), typeAnd(A).
 
-% Se un achievement è di tipo OR, deve contenere esattamente due sottogoal
+% If an achievement is of type OR, it must contain exactly two subgoals
 2 { containsDef(A,A1) : contains(A,A1) } 2 :- typeOr(A).
 :- contains(A,A1), not containsDef(A,A1), typeOr(A).
 
-% Possono avere tipo OR solo gli achievement complessi
+% Only complex achievements can be of type OR
 :- typeOr(achievement(P,Q)), not complex(achievement(P,Q)).
 
-% Possono avere tipo AND solo gli achievement complessi
+% Only complex achievements can be of type AND
 :- typeAnd(achievement(P,Q)), not complex(achievement(P,Q)).
 
-% Non si può avere controllo diretto sugli achievement complessi.
+% A principal cannot directly realize a complex achievement
 :- complex(A), canRealize(_,A).
 
+% If I control a subgoal of a complex achievement with type OR, I control the complex achievement too
 ctrl(X,A) :- typeOr(A), contains(A,A1), ctrl(X,A1).
-ctrl(X,A) :- typeAnd(A), contains(A,A1), contains(A,A2), ctrl(X,A1), ctrl(X,A2), A1!=A2. %%%%%%%%%%%%%% aggiunto A1!=A2
 
-%:- contains(A,A1), contains(A,A2), atomic(A1), typeOr(A), not ctrlSelf(_,A1), not ctrl(A2).
+% If I control both subgoals of a complex achievement with type AND, I control the complex achievement too
+ctrl(X,A) :- typeAnd(A), contains(A,A1), contains(A,A2), ctrl(X,A1), ctrl(X,A2), A1!=A2.
 
 canRealize(X,A1) :- a(X,_,A), typeAnd(A), contains(A,A1),not a(_,X,A1),atomic(A1).
-:- typeAnd(A), a(X,_,A), contains(A, A1), not ctrl(X, A1). %%%%%%%%%%%%% aggiunto
+:- typeAnd(A), a(X,_,A), contains(A, A1), not ctrl(X, A1).
 
-%ctrlSelf(X,A1) :- a(X,_,A), typeOr(A), contains(A,A1), contains(A,A2), not ctrl(X,A2),atomic(A1), A1!=A2.
+0 {canRealize(X,A1): a(X,_,A), not a(_,X,A1), contains(A,A1), atomic(A1)} 2 :- typeOr(A).
 
-0 {canRealize(X,A1): a(X,_,A), not a(_,X,A1), contains(A,A1), atomic(A1)} 2 :- typeOr(A). %%%%%%%%%%%%%% aggiunto
+% If I am accountable for an achievement with type OR, I must control at lest one of the subgoals
+:- typeOr(A), a(X,_,A), contains(A, A1), contains(A, A2), A1!=A2, not ctrl(X, A1), not ctrl(X, A2).
 
-:- typeOr(A), a(X,_,A), contains(A, A1), contains(A, A2), A1!=A2, not ctrl(X, A1), not ctrl(X, A2). %%%%%%%%%%%%% aggiunto
-
+% It is inconsistent that a principal is accountable for an achievement and he/she does not have control over it
 :- a(X,_,A), not ctrl(X,A).
