@@ -21,7 +21,7 @@ contains(achievement(frame, interior), achievement(wallsPainted, windowsFitted))
 contains(achievement(frame, exterior), achievement(frame, lawnInstalled)).
 contains(achievement(frame, exterior), achievement(frame, concretePoured)).
 
-typeOr(achievement(true, houseBuilt)).
+typeAnd(achievement(true, houseBuilt)).
 typeAnd(achievement(frame, interiorExterior)).
 typeAnd(achievement(true, frame)).
 typeAnd(achievement(frame, interior)).
@@ -50,10 +50,10 @@ exp(X,Y,A) :- a(X,Y,A).
 ctrl(X,A) :- a(_,X,A).
 
 % Se sono accountable per un achievement atomico e nessuno è accountable verso di me, allora devo averne controllo diretto.
-ctrlSelf(X,A) :- a(X,_,A), not a(_,X,A),atomic(A).
+canRealize(X,A) :- a(X,_,A), not a(_,X,A),atomic(A).
 
 % Avere controllo diretto implica avere controllo.
-ctrl(X,A) :- ctrlSelf(X,A).
+ctrl(X,A) :- canRealize(X,A).
 
 % Un achievement che ne contiene altri è complesso.
 complex(achievement(P,Q)) :- achievement(P,Q), contains(achievement(P,Q),_).
@@ -85,22 +85,20 @@ atomic(achievement(P,Q)) :- achievement(P,Q), not contains(achievement(P,Q),_).
 :- typeAnd(achievement(P,Q)), not complex(achievement(P,Q)).
 
 % Non si può avere controllo diretto sugli achievement complessi.
-:- complex(A), ctrlSelf(_,A).
+:- complex(A), canRealize(_,A).
 
 ctrl(X,A) :- typeOr(A), contains(A,A1), ctrl(X,A1).
 ctrl(X,A) :- typeAnd(A), contains(A,A1), contains(A,A2), ctrl(X,A1), ctrl(X,A2), A1!=A2. %%%%%%%%%%%%%% aggiunto A1!=A2
 
 %:- contains(A,A1), contains(A,A2), atomic(A1), typeOr(A), not ctrlSelf(_,A1), not ctrl(A2).
 
-ctrlSelf(X,A1) :- a(X,_,A), typeAnd(A), contains(A,A1),not a(_,X,A1),atomic(A1).
+canRealize(X,A1) :- a(X,_,A), typeAnd(A), contains(A,A1),not a(_,X,A1),atomic(A1).
 :- typeAnd(A), a(X,_,A), contains(A, A1), not ctrl(X, A1). %%%%%%%%%%%%% aggiunto
 
 %ctrlSelf(X,A1) :- a(X,_,A), typeOr(A), contains(A,A1), contains(A,A2), not ctrl(X,A2),atomic(A1), A1!=A2.
 
-0 {ctrlSelf(X,A1): a(X,_,A), not a(_,X,A1), contains(A,A1), atomic(A1)} 2 :- typeOr(A). %%%%%%%%%%%%%% aggiunto
+0 {canRealize(X,A1): a(X,_,A), not a(_,X,A1), contains(A,A1), atomic(A1)} 2 :- typeOr(A). %%%%%%%%%%%%%% aggiunto
 
 :- typeOr(A), a(X,_,A), contains(A, A1), contains(A, A2), A1!=A2, not ctrl(X, A1), not ctrl(X, A2). %%%%%%%%%%%%% aggiunto
 
 :- a(X,_,A), not ctrl(X,A).
-
-#show ctrlSelf/2.
