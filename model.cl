@@ -21,7 +21,7 @@ contains(achievement(frame, interior), achievement(wallsPainted, windowsFitted))
 contains(achievement(frame, exterior), achievement(frame, lawnInstalled)).
 contains(achievement(frame, exterior), achievement(frame, concretePoured)).
 
-typeAnd(achievement(true, houseBuilt)).
+typeOr(achievement(true, houseBuilt)).
 typeAnd(achievement(frame, interiorExterior)).
 typeAnd(achievement(true, frame)).
 typeAnd(achievement(frame, interior)).
@@ -102,3 +102,5 @@ ctrlSelf(X,A1) :- a(X,_,A), typeAnd(A), contains(A,A1),not a(_,X,A1),atomic(A1).
 :- typeOr(A), a(X,_,A), contains(A, A1), contains(A, A2), A1!=A2, not ctrl(X, A1), not ctrl(X, A2). %%%%%%%%%%%%% aggiunto
 
 :- a(X,_,A), not ctrl(X,A).
+
+#show ctrlSelf/2.
